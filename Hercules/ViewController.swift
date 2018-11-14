@@ -10,21 +10,49 @@ import Cocoa
 import WebKit
 
 class ViewController: NSViewController {
+	@IBOutlet var webStackView: NSStackView!
+	@IBOutlet var urlsTextView: NSTextView!
 	
-	var urls: [URL] = [] {
-		didSet(previousURLs) {
-			let text = urls.map { $0.absoluteString }.joined(separator: "\n") + "\n"
-			let textStorage = urlsTextView.textStorage!
-			let richText = NSAttributedString(string: text, attributes: [
-				.font: NSFont.systemFont(ofSize: 14.0),
-				.foregroundColor: NSColor.textColor,
-				])
-			textStorage.replaceCharacters(in: NSRange(location: 0, length: textStorage.length), with: richText)
+	enum State {
+		struct Pages {
+			var urls: [URL]
+			
+			var text: String {
+				get {
+					return urls.map { $0.absoluteString }.joined(separator: "\n") + "\n"
+				}
+				set(newText) {
+					let searchURLComponents = URLComponents(string: "https://duckduckgo.com/?q=")!
+					let urls = newText.split(separator: "\n").compactMap { (input: Substring) -> URL? in
+						var url = URL(string: String(input))
+						if url?.scheme == nil {
+							var urlComponents = searchURLComponents
+							urlComponents.queryItems = [URLQueryItem(name: "q", value: String(input))]
+							url = urlComponents.url
+						}
+						return url
+					}
+					print("set urls", urls)
+					self.urls = urls
+				}
+			}
+			
+			func commit(to mas: NSMutableAttributedString) {
+				let text = self.text
+				let richText = NSAttributedString(string: text, attributes: [
+					.font: NSFont.systemFont(ofSize: 14.0),
+					.foregroundColor: NSColor.textColor,
+					])
+				mas.replaceCharacters(in: NSRange(location: 0, length: mas.length), with: richText)
+			}
 		}
 	}
 	
-	@IBOutlet var webStackView: NSStackView!
-	@IBOutlet var urlsTextView: NSTextView!
+	var pagesState: State.Pages = State.Pages(urls: []) {
+		didSet {
+			self.pagesState.commit(to: self.urlsTextView.textStorage!)
+		}
+	}
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
@@ -46,12 +74,12 @@ class ViewController: NSViewController {
 		
 		urlsTextView.delegate = self
 		
-		self.urls = []
+		pagesState.commit(to: self.urlsTextView.textStorage!)
 	}
 
 	override var representedObject: Any? {
 		didSet {
-		// Update the view, if already loaded.
+			// Update the view, if already loaded.
 		}
 	}
 	
@@ -85,11 +113,10 @@ extension ViewController {
 	}
 	
 	func updateURLs(text: String) {
-		let urls = text.split(separator: "\n").compactMap { URL(string: String($0)) }
-		self.urls = urls
-		let webViews = self.webStackView.arrangedSubviews as! [WKWebView]
+		self.pagesState.text = text
+		let webViews = (self.webStackView.arrangedSubviews as NSArray).copy() as! [WKWebView]
 		let openWebViewCount = webViews.count
-		for (index, url) in urls.enumerated() {
+		for (index, url) in self.pagesState.urls.enumerated() {
 			if index < openWebViewCount {
 				let webView = webViews[index]
 				if webView.url != url {
@@ -99,13 +126,17 @@ extension ViewController {
 				self.addPage(url: url)
 			}
 		}
+		
+//		for indexToRemove in openWebViewCount...webViews.count {
+//			self.webStackView.removeArrangedSubview(webViews[indexToRemove])
+//		}
 	}
 }
 
 extension ViewController {
 	@IBAction func addPage(_ sender: Any?) {
-		self.urls.append(url)
 		let url = URL(string: "https://start.duckduckgo.com/")!
+		self.pagesState.urls.append(url)
 		self.addPage(url: url)
 	}
 
@@ -115,7 +146,7 @@ extension ViewController : WKNavigationDelegate {
 	private func urlDidChange(for webView: WKWebView) {
 		guard let index = webStackView.arrangedSubviews.firstIndex(of: webView) else { return }
 		guard let url = webView.url else { return }
-		self.urls[index] = url
+		self.pagesState.urls[index] = url
 	}
 	
 	func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
