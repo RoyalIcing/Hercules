@@ -9,56 +9,24 @@
 import Cocoa
 import WebKit
 
+extension NSTextStorage {
+	fileprivate func update(from pages: Model.Pages) {
+		let text = pages.text
+		let richText = NSAttributedString(string: text, attributes: [
+			.font: NSFont.systemFont(ofSize: 14.0),
+			.foregroundColor: NSColor.textColor,
+			])
+		self.replaceCharacters(in: NSRange(location: 0, length: self.length), with: richText)
+	}
+}
+
 class ViewController: NSViewController {
 	@IBOutlet var webStackView: NSStackView!
 	@IBOutlet var urlsTextView: NSTextView!
 	
-	enum State {
-		struct Pages {
-			var urls: [URL?]
-			
-			var text: String {
-				get {
-					return urls.map { url in
-						guard let url = url else { return "" }
-						if url.scheme == "about" { return "" }
-						return url.absoluteString
-						}.joined(separator: "\n")
-				}
-				set(newText) {
-					let urls = newText.split(separator: "\n", omittingEmptySubsequences: false).map { (input: Substring) -> URL? in
-						let input = input.trimmingCharacters(in: .whitespacesAndNewlines)
-						if input == "" {
-							return nil
-						}
-						
-						var url = URL(string: String(input))
-						if url?.scheme == nil {
-							var urlComponents = URLComponents(string: "https://duckduckgo.com/")!
-							urlComponents.queryItems = [URLQueryItem(name: "q", value: String(input))]
-							url = urlComponents.url
-						}
-						return url
-					}
-					print("set urls", urls)
-					self.urls = urls
-				}
-			}
-			
-			func commit(to mas: NSMutableAttributedString) {
-				let text = self.text
-				let richText = NSAttributedString(string: text, attributes: [
-					.font: NSFont.systemFont(ofSize: 14.0),
-					.foregroundColor: NSColor.textColor,
-					])
-				mas.replaceCharacters(in: NSRange(location: 0, length: mas.length), with: richText)
-			}
-		}
-	}
-	
-	var pagesState: State.Pages = State.Pages(urls: []) {
+	var pagesState: Model.Pages = Model.Pages(urls: []) {
 		didSet {
-			self.pagesState.commit(to: self.urlsTextView.textStorage!)
+			self.urlsTextView.textStorage!.update(from: self.pagesState)
 		}
 	}
 	
@@ -84,7 +52,7 @@ class ViewController: NSViewController {
 		
 		urlsTextView.delegate = self
 		
-		pagesState.commit(to: self.urlsTextView.textStorage!)
+		self.urlsTextView.textStorage!.update(from: self.pagesState)
 	}
 
 	override var representedObject: Any? {

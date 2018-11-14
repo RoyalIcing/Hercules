@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B21534D4219C590300C4A9D2 /* Base.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21534D3219C590300C4A9D2 /* Base.swift */; };
+		B28684F9219C58AB0046A2DB /* Pages.swift in Sources */ = {isa = PBXBuildFile; fileRef = B28684F8219C58AB0046A2DB /* Pages.swift */; };
 		B2EBBA6521997992000595AC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2EBBA6421997992000595AC /* AppDelegate.swift */; };
 		B2EBBA6721997992000595AC /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2EBBA6621997992000595AC /* ViewController.swift */; };
 		B2EBBA6921997992000595AC /* Document.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2EBBA6821997992000595AC /* Document.swift */; };
@@ -34,6 +36,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B21534D3219C590300C4A9D2 /* Base.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Base.swift; sourceTree = "<group>"; };
+		B28684F8219C58AB0046A2DB /* Pages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pages.swift; sourceTree = "<group>"; };
 		B2EBBA6121997992000595AC /* Hercules.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hercules.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2EBBA6421997992000595AC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B2EBBA6621997992000595AC /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -75,6 +79,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B21534D2219C58C800C4A9D2 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				B21534D3219C590300C4A9D2 /* Base.swift */,
+				B28684F8219C58AB0046A2DB /* Pages.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
 		B2EBBA5821997992000595AC = {
 			isa = PBXGroup;
 			children = (
@@ -98,6 +111,7 @@
 		B2EBBA6321997992000595AC /* Hercules */ = {
 			isa = PBXGroup;
 			children = (
+				B21534D2219C58C800C4A9D2 /* Model */,
 				B2EBBA6421997992000595AC /* AppDelegate.swift */,
 				B2EBBA6621997992000595AC /* ViewController.swift */,
 				B2EBBA6821997992000595AC /* Document.swift */,
@@ -264,6 +278,8 @@
 			files = (
 				B2EBBA6721997992000595AC /* ViewController.swift in Sources */,
 				B2EBBA6521997992000595AC /* AppDelegate.swift in Sources */,
+				B21534D4219C590300C4A9D2 /* Base.swift in Sources */,
+				B28684F9219C58AB0046A2DB /* Pages.swift in Sources */,
 				B2EBBA6921997992000595AC /* Document.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
