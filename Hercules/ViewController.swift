@@ -104,8 +104,8 @@ extension ViewController {
 
 extension ViewController {
 	@IBAction func addPage(_ sender: Any?) {
-		let url = URL(string: "https://duckduckgo.com/")!
 		self.urls.append(url)
+		let url = URL(string: "https://start.duckduckgo.com/")!
 		self.addPage(url: url)
 	}
 
