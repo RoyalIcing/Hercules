@@ -24,9 +24,17 @@ class ViewController: NSViewController {
 	@IBOutlet var webStackView: NSStackView!
 	@IBOutlet var urlsTextView: NSTextView!
 	
-	var pagesState: Model.Pages = Model.Pages(urls: []) {
-		didSet {
-			self.urlsTextView.textStorage!.update(from: self.pagesState)
+	var document: Document {
+		return (self.view.window?.windowController?.document as? Document)!
+	}
+	
+	var pagesState: Model.Pages {
+		get {
+			return document.pages
+		}
+		set(new) {
+			document.pages = new
+			self.urlsTextView.textStorage!.update(from: new)
 		}
 	}
 	
@@ -51,8 +59,11 @@ class ViewController: NSViewController {
 		])
 		
 		urlsTextView.delegate = self
-		
+	}
+	
+	override func viewDidAppear() {
 		self.urlsTextView.textStorage!.update(from: self.pagesState)
+		self.updateWebViews()
 	}
 
 	override var representedObject: Any? {
