@@ -15,18 +15,26 @@ class ViewController: NSViewController {
 	
 	enum State {
 		struct Pages {
-			var urls: [URL]
+			var urls: [URL?]
 			
 			var text: String {
 				get {
-					return urls.map { $0.absoluteString }.joined(separator: "\n") + "\n"
+					return urls.map { url in
+						guard let url = url else { return "" }
+						if url.scheme == "about" { return "" }
+						return url.absoluteString
+						}.joined(separator: "\n")
 				}
 				set(newText) {
-					let searchURLComponents = URLComponents(string: "https://duckduckgo.com/?q=")!
-					let urls = newText.split(separator: "\n").compactMap { (input: Substring) -> URL? in
+					let urls = newText.split(separator: "\n", omittingEmptySubsequences: false).map { (input: Substring) -> URL? in
+						let input = input.trimmingCharacters(in: .whitespacesAndNewlines)
+						if input == "" {
+							return nil
+						}
+						
 						var url = URL(string: String(input))
 						if url?.scheme == nil {
-							var urlComponents = searchURLComponents
+							var urlComponents = URLComponents(string: "https://duckduckgo.com/")!
 							urlComponents.queryItems = [URLQueryItem(name: "q", value: String(input))]
 							url = urlComponents.url
 						}
@@ -53,6 +61,8 @@ class ViewController: NSViewController {
 			self.pagesState.commit(to: self.urlsTextView.textStorage!)
 		}
 	}
+	
+	var needsToUpdateURLsFromText = false
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
@@ -94,14 +104,11 @@ extension ViewController {
 		return webViewConfig
 	}
 	
-	func addPage(url: URL?) {
+	func addWebView(for: URL?) -> WKWebView {
 		let webViewConfig = self.makeConfiguration()
 		let webView = WKWebView(frame: CGRect(x: 0.0, y: 0.0, width: 320.0, height: 100.0), configuration: webViewConfig)
 		webView.customUserAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372"
 		webView.navigationDelegate = self
-		if let url = url {
-			webView.load(URLRequest(url: url))
-		}
 		
 		let webScrollView = self.webScrollView
 		webView.translatesAutoresizingMaskIntoConstraints = false
@@ -110,34 +117,50 @@ extension ViewController {
 			webView.widthAnchor.constraint(greaterThanOrEqualToConstant: 320.0),
 			webView.bottomAnchor.constraint(equalTo: webScrollView.contentView.bottomAnchor, constant: -20.0)
 			])
+		
+		return webView
 	}
 	
-	func updateURLs(text: String) {
-		self.pagesState.text = text
+	func updateWebViews() {
 		let webViews = (self.webStackView.arrangedSubviews as NSArray).copy() as! [WKWebView]
-		let openWebViewCount = webViews.count
-		for (index, url) in self.pagesState.urls.enumerated() {
-			if index < openWebViewCount {
-				let webView = webViews[index]
+		var openWebViewsCount = self.webStackView.arrangedSubviews.count
+		for (index, maybeURL) in self.pagesState.urls.enumerated() {
+			let webView: WKWebView
+			if index < openWebViewsCount {
+				webView = webViews[index]
+			} else {
+				webView = self.addWebView(for: maybeURL)
+			}
+			
+			if let url = maybeURL {
 				if webView.url != url {
 					webView.load(URLRequest(url: url))
 				}
-			} else {
-				self.addPage(url: url)
+			}
+			else {
+				webView.loadHTMLString("", baseURL: nil)
 			}
 		}
 		
-//		for indexToRemove in openWebViewCount...webViews.count {
-//			self.webStackView.removeArrangedSubview(webViews[indexToRemove])
-//		}
+		openWebViewsCount = self.webStackView.arrangedSubviews.count
+		if self.pagesState.urls.count < openWebViewsCount {
+			for indexToRemove in self.pagesState.urls.count ..< openWebViewsCount {
+				print("removing", indexToRemove)
+				self.webStackView.removeArrangedSubview(webViews[indexToRemove])
+			}
+		}
 	}
 }
 
 extension ViewController {
+	var newPageURL: URL {
+		return URL(string: "https://start.duckduckgo.com/")!
+	}
+	
 	@IBAction func addPage(_ sender: Any?) {
-		let url = URL(string: "https://start.duckduckgo.com/")!
+		let url = self.newPageURL
 		self.pagesState.urls.append(url)
-		self.addPage(url: url)
+		self.updateWebViews()
 	}
 
 }
@@ -146,6 +169,7 @@ extension ViewController : WKNavigationDelegate {
 	private func urlDidChange(for webView: WKWebView) {
 		guard let index = webStackView.arrangedSubviews.firstIndex(of: webView) else { return }
 		guard let url = webView.url else { return }
+		// TODO: use smarter way to change URL line in text view while keeping pending text editing changes
 		self.pagesState.urls[index] = url
 	}
 	
@@ -159,11 +183,32 @@ extension ViewController : WKNavigationDelegate {
 }
 
 extension ViewController : NSTextViewDelegate {
+	func updatePagesFromText() {
+		self.pagesState.text = self.urlsTextView.string
+		self.updateWebViews()
+		self.needsToUpdateURLsFromText = false
+	}
+	
 	func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
 		if commandSelector == #selector(NSTextView.insertNewline(_:)) {
-			self.updateURLs(text: textView.string)
+			self.needsToUpdateURLsFromText = true
 		}
 		
 		return false
+	}
+	
+	func textView(_ textView: NSTextView, shouldChangeTextIn affectedCharRange: NSRange, replacementString: String?) -> Bool {
+		let before = (textView.string as NSString).substring(with: affectedCharRange)
+		if before.contains("\n") {
+			self.needsToUpdateURLsFromText = true
+		}
+		
+		return true
+	}
+	
+	func textDidChange(_ notification: Notification) {
+		if self.needsToUpdateURLsFromText {
+			self.updatePagesFromText()
+		}
 	}
 }
