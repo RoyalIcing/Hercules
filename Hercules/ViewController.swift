@@ -104,15 +104,18 @@ extension ViewController {
 	func updateWebViews() {
 		let webViews = (self.webStackView.arrangedSubviews as NSArray).copy() as! [WKWebView]
 		var openWebViewsCount = self.webStackView.arrangedSubviews.count
-		for (index, maybeURL) in self.pagesState.urls.enumerated() {
+		
+		let pages = self.pagesState.presentedPages
+		
+		for (index, page) in pages.enumerated() {
 			let webView: WKWebView
 			if index < openWebViewsCount {
 				webView = webViews[index]
 			} else {
-				webView = self.addWebView(for: maybeURL)
+				webView = self.addWebView(for: page.url)
 			}
 			
-			if let url = maybeURL {
+			if let url = page.url {
 				if webView.url != url {
 					webView.load(URLRequest(url: url))
 				}
@@ -123,8 +126,8 @@ extension ViewController {
 		}
 		
 		openWebViewsCount = self.webStackView.arrangedSubviews.count
-		if self.pagesState.urls.count < openWebViewsCount {
-			for indexToRemove in self.pagesState.urls.count ..< openWebViewsCount {
+		if pages.count < openWebViewsCount {
+			for indexToRemove in pages.count ..< openWebViewsCount {
 				print("removing", indexToRemove)
 				self.webStackView.removeArrangedSubview(webViews[indexToRemove])
 			}
@@ -139,7 +142,7 @@ extension ViewController {
 	
 	@IBAction func addPage(_ sender: Any?) {
 		let url = self.newPageURL
-		self.pagesState.urls.append(url)
+		self.pagesState.pages.append(Model.Page.web(url: url))
 		self.updateWebViews()
 	}
 
@@ -150,7 +153,7 @@ extension ViewController : WKNavigationDelegate {
 		guard let index = webStackView.arrangedSubviews.firstIndex(of: webView) else { return }
 		guard let url = webView.url else { return }
 		// TODO: use smarter way to change URL line in text view while keeping pending text editing changes
-		self.pagesState.urls[index] = url
+		self.pagesState.pages[index] = Model.Page.web(url: url)
 	}
 	
 	func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {

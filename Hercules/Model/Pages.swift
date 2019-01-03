@@ -9,34 +9,58 @@
 import Cocoa
 
 extension Model {
+	enum Page : Equatable {
+		case blank
+		case web(url: URL)
+		
+		var url: URL? {
+			switch self {
+			case let .web(url):
+				return url
+			default:
+				return nil
+			}
+		}
+	}
+	
 	struct Pages {
-		var urls: [URL?]
+		var pages: [Page]
+		var presentedPages: [Page] {
+			guard let lastValidIndex = pages.lastIndex(where: { $0 != .blank }) else {
+				return self.pages
+			}
+			let slice = self.pages[...lastValidIndex]
+			return Array(slice)
+		}
 		
 		var text: String {
 			get {
-				return urls.map { url in
-					guard let url = url else { return "" }
+				return pages.map { page in
+					guard case let .web(url) = page else { return "" }
 					if url.scheme == "about" { return "" }
 					return url.absoluteString
 					}.joined(separator: "\n")
 			}
 			set(newText) {
-				let urls = newText.split(separator: "\n", omittingEmptySubsequences: false).map { (input: Substring) -> URL? in
+				let pages = newText.split(separator: "\n", omittingEmptySubsequences: false).map { (input: Substring) -> Page in
 					let input = input.trimmingCharacters(in: .whitespacesAndNewlines)
 					if input == "" {
-						return nil
+						return .blank
 					}
 					
-					var url = URL(string: String(input))
-					if url?.scheme == nil {
+					var maybeURL = URL(string: String(input))
+					
+					if maybeURL?.scheme == nil {
 						var urlComponents = URLComponents(string: "https://duckduckgo.com/")!
 						urlComponents.queryItems = [URLQueryItem(name: "q", value: String(input))]
-						url = urlComponents.url
+						maybeURL = urlComponents.url
 					}
-					return url
+					
+					guard let url = maybeURL else { return .blank }
+					return Page.web(url: url)
 				}
-				print("set urls", urls)
-				self.urls = urls
+				print("set pages", pages)
+				self.pages = pages
 			}
 		}
 		

@@ -11,9 +11,9 @@ import Cocoa
 
 class Document: NSDocument {
 	
-	var pages: Model.Pages = Model.Pages(urls: []) {
+	var pages: Model.Pages = Model.Pages(pages: []) {
 		didSet(oldPages) {
-			if oldPages.urls != pages.urls {
+			if oldPages.pages != pages.pages {
 				self.updateChangeCount(.changeDone)
 			}
 		}
