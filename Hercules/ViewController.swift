@@ -119,12 +119,51 @@ extension ViewController {
 				webView = self.addWebView(for: page.url)
 			}
 			
-			if let url = page.url {
+			switch page {
+			case let .web(url):
 				if webView.url != url {
 					webView.load(URLRequest(url: url))
 				}
-			}
-			else {
+			case let .uncommittedSearch(query):
+				var htmlSafeQuery = query
+				htmlSafeQuery = htmlSafeQuery.replacingOccurrences(of: "<", with: "&lt;")
+				htmlSafeQuery = htmlSafeQuery.replacingOccurrences(of: ">", with: "&gt;")
+				htmlSafeQuery = htmlSafeQuery.replacingOccurrences(of: "&", with: "&amp;")
+				let html = """
+				<!doctype html>
+				<head>
+				<meta charset="utf-8">
+				<style>
+				html {
+				  font-size: 18px;
+				}
+				* {
+				  padding: 0;
+				  margin: 0;
+				}
+				main {
+				  height: 100vh; display: flex; align-items: center;
+				}
+				h1 {
+				  flex-grow: 1;
+				  text-align: center;
+				  padding: 0.5rem;
+				  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+				  font-size: 2rem;
+				}
+				</style>
+				</head>
+				<html>
+				<body>
+				<main>
+				<h1>\(htmlSafeQuery)</h1>
+				</main>
+				</body>
+				</html>
+				</div>
+"""
+				webView.loadHTMLString(html, baseURL: nil)
+			case .blank:
 				webView.loadHTMLString("", baseURL: nil)
 			}
 		}
@@ -157,7 +196,12 @@ extension ViewController : WKNavigationDelegate {
 		guard let index = webStackView.arrangedSubviews.firstIndex(of: webView) else { return }
 		guard let url = webView.url else { return }
 		// TODO: use smarter way to change URL line in text view while keeping pending text editing changes
-		self.pagesState.pages[index] = Model.Page.web(url: url)
+		switch self.pagesState.pages[index] {
+		case .web:
+			self.pagesState.pages[index] = Model.Page.web(url: url)
+		default:
+			break
+		}
 	}
 	
 	func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
@@ -178,8 +222,11 @@ extension ViewController : WKNavigationDelegate {
 }
 
 extension ViewController : NSTextViewDelegate {
-	func updatePagesFromText() {
+	func updatePagesFromText(commitSearches: Bool) {
 		self.pagesState.text = self.urlsTextView.string
+		if commitSearches {
+			self.pagesState.commitSearches()
+		}
 		self.updateWebViews()
 		self.needsToUpdateURLsFromText = false
 	}
@@ -202,10 +249,8 @@ extension ViewController : NSTextViewDelegate {
 	}
 	
 	func textDidChange(_ notification: Notification) {
-		self.urlsTextView.textStorage!.formatAsURLField()
+//		self.urlsTextView.textStorage!.formatAsURLField()
 		
-		if self.needsToUpdateURLsFromText {
-			self.updatePagesFromText()
-		}
+		self.updatePagesFromText(commitSearches: self.needsToUpdateURLsFromText)
 	}
 }

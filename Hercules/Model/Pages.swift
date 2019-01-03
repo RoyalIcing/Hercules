@@ -12,6 +12,7 @@ extension Model {
 	enum Page : Equatable {
 		case blank
 		case web(url: URL)
+		case uncommittedSearch(query: String)
 		
 		var url: URL? {
 			switch self {
@@ -33,31 +34,48 @@ extension Model {
 			return Array(slice)
 		}
 		
+		mutating func commitSearches() {
+			let newPages = self.pages.map { page -> Page in
+				switch page {
+				case let .uncommittedSearch(query):
+					var urlComponents = URLComponents(string: "https://duckduckgo.com/")!
+					urlComponents.queryItems = [URLQueryItem(name: "q", value: query)]
+					return .web(url: urlComponents.url!)
+				default:
+					return page
+				}
+			}
+			self.pages = newPages
+		}
+		
 		var text: String {
 			get {
 				return pages.map { page in
-					guard case let .web(url) = page else { return "" }
-					if url.scheme == "about" { return "" }
-					return url.absoluteString
+					switch page {
+					case let .web(url):
+						return url.absoluteString
+					case let .uncommittedSearch(query):
+						return query
+					case .blank:
+						return ""
+					}
 					}.joined(separator: "\n")
 			}
 			set(newText) {
 				let pages = newText.split(separator: "\n", omittingEmptySubsequences: false).map { (input: Substring) -> Page in
-					let input = input.trimmingCharacters(in: .whitespacesAndNewlines)
-					if input == "" {
+					let trimmedInput = input.trimmingCharacters(in: .whitespacesAndNewlines)
+					if trimmedInput == "" {
 						return .blank
 					}
 					
-					var maybeURL = URL(string: String(input))
-					
-					if maybeURL?.scheme == nil {
-						var urlComponents = URLComponents(string: "https://duckduckgo.com/")!
-						urlComponents.queryItems = [URLQueryItem(name: "q", value: String(input))]
-						maybeURL = urlComponents.url
+					if
+						let url = URL(string: String(trimmedInput)),
+						url.scheme != nil
+					{
+						return Page.web(url: url)
 					}
 					
-					guard let url = maybeURL else { return .blank }
-					return Page.web(url: url)
+					return Page.uncommittedSearch(query: String(input))
 				}
 				print("set pages", pages)
 				self.pages = pages
