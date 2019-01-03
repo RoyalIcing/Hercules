@@ -410,7 +410,7 @@
         <scene sceneID="R2V-B0-nI4">
             <objects>
                 <windowController storyboardIdentifier="Document Window Controller" id="jGA-0Y-lOj" sceneMemberID="viewController">
-                    <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="Ckk-yw-fiv">
+                    <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" tabbingMode="preferred" id="Ckk-yw-fiv">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="196" y="240" width="480" height="270"/>
@@ -436,9 +436,9 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <scrollView borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasVerticalScroller="NO" verticalScrollElasticity="none" translatesAutoresizingMaskIntoConstraints="NO" id="PVW-bF-Wno">
-                                <rect key="frame" x="0.0" y="66" width="481" height="204"/>
+                                <rect key="frame" x="0.0" y="70" width="481" height="200"/>
                                 <clipView key="contentView" id="a2B-T0-8Nx">
-                                    <rect key="frame" x="0.0" y="0.0" width="481" height="204"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="481" height="200"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <stackView distribution="fillEqually" orientation="horizontal" alignment="top" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="oV8-a9-66G">
@@ -448,7 +448,7 @@
                                     </subviews>
                                 </clipView>
                                 <scroller key="horizontalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="yED-d5-viY">
-                                    <rect key="frame" x="0.0" y="188" width="481" height="16"/>
+                                    <rect key="frame" x="0.0" y="184" width="481" height="16"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="FbY-ih-GHc">
@@ -457,38 +457,39 @@
                                 </scroller>
                             </scrollView>
                             <scrollView borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fom-Ca-3ow">
-                                <rect key="frame" x="12" y="8" width="457" height="50"/>
+                                <rect key="frame" x="0.0" y="0.0" width="481" height="70"/>
                                 <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="9sc-0F-ExP">
-                                    <rect key="frame" x="0.0" y="0.0" width="457" height="50"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="481" height="70"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <textView importsGraphics="NO" richText="NO" verticallyResizable="YES" findStyle="bar" allowsUndo="YES" id="UM0-3w-eJu">
-                                            <rect key="frame" x="0.0" y="0.0" width="457" height="50"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="461" height="65"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                            <size key="minSize" width="457" height="50"/>
-                                            <size key="maxSize" width="457" height="10000000"/>
+                                            <size key="minSize" width="461" height="65"/>
+                                            <size key="maxSize" width="461" height="10000000"/>
                                             <color key="insertionPointColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                         </textView>
                                     </subviews>
                                 </clipView>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="50" id="m7S-B7-Ch3"/>
+                                    <constraint firstAttribute="height" constant="70" id="m7S-B7-Ch3"/>
                                 </constraints>
+                                <edgeInsets key="contentInsets" left="10" right="10" top="0.0" bottom="5"/>
                                 <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="ccD-jj-Kii">
-                                    <rect key="frame" x="441" y="0.0" width="16" height="50"/>
+                                    <rect key="frame" x="455" y="0.0" width="16" height="65"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                             </scrollView>
                         </subviews>
                         <constraints>
                             <constraint firstItem="PVW-bF-Wno" firstAttribute="leading" secondItem="ERx-hH-rdd" secondAttribute="leading" id="48x-VB-5uH"/>
-                            <constraint firstItem="Fom-Ca-3ow" firstAttribute="top" secondItem="PVW-bF-Wno" secondAttribute="bottom" constant="8" id="AUI-VV-W1D"/>
+                            <constraint firstItem="Fom-Ca-3ow" firstAttribute="top" secondItem="PVW-bF-Wno" secondAttribute="bottom" id="AUI-VV-W1D"/>
                             <constraint firstAttribute="trailing" secondItem="PVW-bF-Wno" secondAttribute="trailing" id="Mx1-Yd-xJa"/>
-                            <constraint firstItem="Fom-Ca-3ow" firstAttribute="leading" secondItem="ERx-hH-rdd" secondAttribute="leading" constant="12" id="V8N-kS-Fw1"/>
-                            <constraint firstAttribute="bottom" secondItem="Fom-Ca-3ow" secondAttribute="bottom" constant="8" id="ZaK-lt-1Na"/>
-                            <constraint firstAttribute="trailing" secondItem="Fom-Ca-3ow" secondAttribute="trailing" constant="12" id="pKf-aC-e04"/>
+                            <constraint firstItem="Fom-Ca-3ow" firstAttribute="leading" secondItem="ERx-hH-rdd" secondAttribute="leading" id="V8N-kS-Fw1"/>
+                            <constraint firstAttribute="bottom" secondItem="Fom-Ca-3ow" secondAttribute="bottom" id="ZaK-lt-1Na"/>
+                            <constraint firstAttribute="trailing" secondItem="Fom-Ca-3ow" secondAttribute="trailing" id="pKf-aC-e04"/>
                             <constraint firstItem="PVW-bF-Wno" firstAttribute="top" secondItem="ERx-hH-rdd" secondAttribute="top" id="yKe-kJ-s1S"/>
                         </constraints>
                     </view>
