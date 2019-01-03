@@ -10,13 +10,17 @@ import Cocoa
 import WebKit
 
 extension NSTextStorage {
-	fileprivate func update(from pages: Model.Pages) {
-		let text = pages.text
-		let richText = NSAttributedString(string: text, attributes: [
+	fileprivate func formatAsURLField(string maybeString: String? = nil) {
+		let string = maybeString ?? self.string
+		let richText = NSAttributedString(string: string, attributes: [
 			.font: NSFont.systemFont(ofSize: 14.0),
 			.foregroundColor: NSColor.textColor,
 			])
 		self.replaceCharacters(in: NSRange(location: 0, length: self.length), with: richText)
+	}
+	
+	fileprivate func update(from pages: Model.Pages) {
+		self.formatAsURLField(string: pages.text)
 	}
 }
 
@@ -117,7 +121,6 @@ extension ViewController {
 			
 			if let url = page.url {
 				if webView.url != url {
-					print("URLs are different \(webView.url) | \(url)")
 					webView.load(URLRequest(url: url))
 				}
 			}
@@ -199,6 +202,8 @@ extension ViewController : NSTextViewDelegate {
 	}
 	
 	func textDidChange(_ notification: Notification) {
+		self.urlsTextView.textStorage!.formatAsURLField()
+		
 		if self.needsToUpdateURLsFromText {
 			self.updatePagesFromText()
 		}

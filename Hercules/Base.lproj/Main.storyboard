@@ -435,19 +435,6 @@
                         <rect key="frame" x="0.0" y="0.0" width="481" height="270"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="c5z-Ou-28U">
-                                <rect key="frame" x="12" y="12" width="21" height="23"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="21" id="R4c-sY-ZTk"/>
-                                </constraints>
-                                <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSAddTemplate" imagePosition="overlaps" alignment="center" lineBreakMode="truncatingTail" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="cZZ-S0-cEm">
-                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <action selector="addPage:" target="5gI-5U-AMq" id="1DP-gc-0OP"/>
-                                </connections>
-                            </button>
                             <scrollView borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasVerticalScroller="NO" verticalScrollElasticity="none" translatesAutoresizingMaskIntoConstraints="NO" id="PVW-bF-Wno">
                                 <rect key="frame" x="0.0" y="66" width="481" height="204"/>
                                 <clipView key="contentView" id="a2B-T0-8Nx">
@@ -470,18 +457,18 @@
                                 </scroller>
                             </scrollView>
                             <scrollView borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fom-Ca-3ow">
-                                <rect key="frame" x="41" y="8" width="428" height="50"/>
+                                <rect key="frame" x="12" y="8" width="457" height="50"/>
                                 <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="9sc-0F-ExP">
-                                    <rect key="frame" x="0.0" y="0.0" width="428" height="50"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="457" height="50"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <textView importsGraphics="NO" richText="NO" verticallyResizable="YES" findStyle="bar" allowsUndo="YES" id="UM0-3w-eJu">
-                                            <rect key="frame" x="0.0" y="0.0" width="428" height="50"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="457" height="50"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                            <size key="minSize" width="428" height="50"/>
-                                            <size key="maxSize" width="455" height="10000000"/>
+                                            <size key="minSize" width="457" height="50"/>
+                                            <size key="maxSize" width="457" height="10000000"/>
                                             <color key="insertionPointColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                         </textView>
                                     </subviews>
@@ -490,7 +477,7 @@
                                     <constraint firstAttribute="height" constant="50" id="m7S-B7-Ch3"/>
                                 </constraints>
                                 <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="ccD-jj-Kii">
-                                    <rect key="frame" x="412" y="0.0" width="16" height="50"/>
+                                    <rect key="frame" x="441" y="0.0" width="16" height="50"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                             </scrollView>
@@ -498,11 +485,9 @@
                         <constraints>
                             <constraint firstItem="PVW-bF-Wno" firstAttribute="leading" secondItem="ERx-hH-rdd" secondAttribute="leading" id="48x-VB-5uH"/>
                             <constraint firstItem="Fom-Ca-3ow" firstAttribute="top" secondItem="PVW-bF-Wno" secondAttribute="bottom" constant="8" id="AUI-VV-W1D"/>
-                            <constraint firstAttribute="bottom" secondItem="c5z-Ou-28U" secondAttribute="bottom" constant="13" id="Ara-T9-ZTd"/>
                             <constraint firstAttribute="trailing" secondItem="PVW-bF-Wno" secondAttribute="trailing" id="Mx1-Yd-xJa"/>
+                            <constraint firstItem="Fom-Ca-3ow" firstAttribute="leading" secondItem="ERx-hH-rdd" secondAttribute="leading" constant="12" id="V8N-kS-Fw1"/>
                             <constraint firstAttribute="bottom" secondItem="Fom-Ca-3ow" secondAttribute="bottom" constant="8" id="ZaK-lt-1Na"/>
-                            <constraint firstItem="c5z-Ou-28U" firstAttribute="leading" secondItem="ERx-hH-rdd" secondAttribute="leading" constant="12" id="f1p-sQ-i7d"/>
-                            <constraint firstItem="Fom-Ca-3ow" firstAttribute="leading" secondItem="c5z-Ou-28U" secondAttribute="trailing" constant="8" id="ikv-O4-8js"/>
                             <constraint firstAttribute="trailing" secondItem="Fom-Ca-3ow" secondAttribute="trailing" constant="12" id="pKf-aC-e04"/>
                             <constraint firstItem="PVW-bF-Wno" firstAttribute="top" secondItem="ERx-hH-rdd" secondAttribute="top" id="yKe-kJ-s1S"/>
                         </constraints>
@@ -517,7 +502,4 @@
             <point key="canvasLocation" x="74.5" y="655"/>
         </scene>
     </scenes>
-    <resources>
-        <image name="NSAddTemplate" width="11" height="11"/>
-    </resources>
 </document>
