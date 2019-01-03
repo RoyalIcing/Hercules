@@ -117,6 +117,7 @@ extension ViewController {
 			
 			if let url = page.url {
 				if webView.url != url {
+					print("URLs are different \(webView.url) | \(url)")
 					webView.load(URLRequest(url: url))
 				}
 			}
@@ -160,7 +161,15 @@ extension ViewController : WKNavigationDelegate {
 		self.urlDidChange(for: webView)
 	}
 	
+	func webView(_ webView: WKWebView, didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!) {
+		self.urlDidChange(for: webView)
+	}
+	
 	func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+		self.urlDidChange(for: webView)
+	}
+	
+	func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
 		self.urlDidChange(for: webView)
 	}
 }
