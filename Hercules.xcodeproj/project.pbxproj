@@ -448,7 +448,7 @@
 		B2EBBA8A21997994000595AC /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "Hercules Mac";
 				CODE_SIGN_ENTITLEMENTS = Hercules/Hercules.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -467,7 +467,7 @@
 		B2EBBA8B21997994000595AC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "Hercules Mac";
 				CODE_SIGN_ENTITLEMENTS = Hercules/Hercules.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
