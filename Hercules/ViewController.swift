@@ -218,6 +218,19 @@ extension ViewController : WKNavigationDelegate {
 	
 	func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
 		self.urlDidChange(for: webView)
+		
+		if false {
+			webView.evaluateJavaScript("""
+	var s = document.createElement("script");
+	s.type = "text/javascript";
+	s.src = "https://cdn.jsdelivr.net/npm/axe-core@3.1.2/axe.min.js";
+	s.integrity = "sha256-wIvlzfT77n6fOnSL6/oLbzB873rY7QHTW/e0Z0mOoYs=";
+	s.crossorigin = "anonymous";
+	var t = document.getElementsByTagName(o)[0];
+	t.parentNode.insertBefore(s, t);
+	""") { (result, error) in
+			}
+		}
 	}
 }
 
