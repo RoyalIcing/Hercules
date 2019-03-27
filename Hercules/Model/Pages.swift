@@ -13,6 +13,8 @@ extension Model {
 		case blank
 		case web(url: URL)
 		case uncommittedSearch(query: String)
+		case graphQLQuery(query: String)
+		case markdownDocument(content: String)
 		
 		var url: URL? {
 			switch self {
@@ -56,6 +58,10 @@ extension Model {
 						return url.absoluteString
 					case let .uncommittedSearch(query):
 						return query
+					case let .graphQLQuery(query):
+						return query
+					case let .markdownDocument(content):
+						return content
 					case .blank:
 						return ""
 					}
@@ -73,6 +79,13 @@ extension Model {
 						url.scheme != nil
 					{
 						return Page.web(url: url)
+					}
+					
+					if input.first == "{" {
+						return Page.graphQLQuery(query: String(input))
+					}
+					else if input.first == "#" {
+						return Page.markdownDocument(content: String(input))
 					}
 					
 					return Page.uncommittedSearch(query: String(input))

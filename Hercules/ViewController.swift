@@ -92,7 +92,8 @@ extension ViewController {
 		let webView = WKWebView(frame: CGRect(x: 0.0, y: 0.0, width: 320.0, height: 100.0), configuration: webViewConfig)
 		webView.customUserAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372"
 		webView.navigationDelegate = self
-        webView.allowsBackForwardNavigationGestures = true
+		webView.uiDelegate = self
+		webView.allowsBackForwardNavigationGestures = true
 		
 		let webScrollView = self.webScrollView
 		webView.translatesAutoresizingMaskIntoConstraints = false
@@ -105,11 +106,13 @@ extension ViewController {
 		return webView
 	}
 	
-	func updateWebViews() {
+	@discardableResult func updateWebViews() -> (added: [WKWebView], removed: [WKWebView]) {
 		let webViews = (self.webStackView.arrangedSubviews as NSArray).copy() as! [WKWebView]
 		var openWebViewsCount = self.webStackView.arrangedSubviews.count
 		
 		let pages = self.pagesState.presentedPages
+		var added: [WKWebView] = []
+		var removed: [WKWebView] = []
 		
 		for (index, page) in pages.enumerated() {
 			let webView: WKWebView
@@ -117,6 +120,7 @@ extension ViewController {
 				webView = webViews[index]
 			} else {
 				webView = self.addWebView(for: page.url)
+				added.append(webView)
 			}
 			
 			switch page {
@@ -125,43 +129,13 @@ extension ViewController {
 					webView.load(URLRequest(url: url))
 				}
 			case let .uncommittedSearch(query):
-				var htmlSafeQuery = query
-				htmlSafeQuery = htmlSafeQuery.replacingOccurrences(of: "<", with: "&lt;")
-				htmlSafeQuery = htmlSafeQuery.replacingOccurrences(of: ">", with: "&gt;")
-				htmlSafeQuery = htmlSafeQuery.replacingOccurrences(of: "&", with: "&amp;")
-				let html = """
-				<!doctype html>
-				<head>
-				<meta charset="utf-8">
-				<style>
-				html {
-				  font-size: 18px;
-				}
-				* {
-				  padding: 0;
-				  margin: 0;
-				}
-				main {
-				  height: 100vh; display: flex; align-items: center;
-				}
-				h1 {
-				  flex-grow: 1;
-				  text-align: center;
-				  padding: 0.5rem;
-				  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
-				  font-size: 2rem;
-				}
-				</style>
-				</head>
-				<html>
-				<body>
-				<main>
-				<h1>\(htmlSafeQuery)</h1>
-				</main>
-				</body>
-				</html>
-				</div>
-"""
+				let html = HTMLTemplate.query(query: query).makeHTML()
+				webView.loadHTMLString(html, baseURL: nil)
+			case let .graphQLQuery(query):
+				let html = HTMLTemplate.graphQLQuery(query: query).makeHTML()
+				webView.loadHTMLString(html, baseURL: nil)
+			case let .markdownDocument(content):
+				let html = HTMLTemplate.markdown(content: content).makeHTML()
 				webView.loadHTMLString(html, baseURL: nil)
 			case .blank:
 				webView.loadHTMLString("", baseURL: nil)
@@ -172,9 +146,12 @@ extension ViewController {
 		if pages.count < openWebViewsCount {
 			for indexToRemove in pages.count ..< openWebViewsCount {
 				print("removing", indexToRemove)
+				removed.append(webViews[indexToRemove])
 				self.webStackView.removeArrangedSubview(webViews[indexToRemove])
 			}
 		}
+		
+		return (added, removed)
 	}
 }
 
@@ -231,6 +208,19 @@ extension ViewController : WKNavigationDelegate {
 	""") { (result, error) in
 			}
 		}
+	}
+}
+
+extension ViewController : WKUIDelegate {
+	func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+		let request = navigationAction.request
+		if let url = request.url {
+			self.pagesState.pages.append(Model.Page.web(url: url))
+			let (added, _) = self.updateWebViews()
+			return added.first
+		}
+		
+		return nil
 	}
 }
 
