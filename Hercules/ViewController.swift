@@ -28,6 +28,8 @@ class ViewController: NSViewController {
 	@IBOutlet var webStackView: NSStackView!
 	@IBOutlet var urlsTextView: NSTextView!
 	
+	var orientation: NSUserInterfaceLayoutOrientation = .vertical
+	
 	var document: Document {
 		return (self.view.window?.windowController?.document as? Document)!
 	}
@@ -43,24 +45,51 @@ class ViewController: NSViewController {
 	}
 	
 	var needsToUpdateURLsFromText = false
-
-	override func viewDidLoad() {
-		super.viewDidLoad()
-		
-		webStackView.translatesAutoresizingMaskIntoConstraints = false
+	
+	var layoutConstraintsForOrientation: [NSLayoutConstraint] = []
+	
+	func updateForOrientation() {
+		let orientation = self.orientation
+		webStackView.orientation = orientation
+		webStackView.edgeInsets = .init(top: 20, left: 20, bottom: 20, right: 20)
 
 		let webScrollView = self.webScrollView
 		let clipView = webScrollView.contentView
-		NSLayoutConstraint.activate([
-			webStackView.topAnchor.constraint(equalTo: clipView.topAnchor),
-			webStackView.bottomAnchor.constraint(equalTo: clipView.bottomAnchor),
-			webStackView.widthAnchor.constraint(greaterThanOrEqualTo: clipView.widthAnchor, multiplier: 1.0),
-			
+		
+		NSLayoutConstraint.deactivate(layoutConstraintsForOrientation)
+		layoutConstraintsForOrientation.removeAll()
+		
+		switch orientation {
+		case .horizontal:
+			layoutConstraintsForOrientation.append(contentsOf: [
+				webStackView.topAnchor.constraint(equalTo: clipView.topAnchor),
+				webStackView.bottomAnchor.constraint(equalTo: clipView.bottomAnchor),
+				webStackView.widthAnchor.constraint(greaterThanOrEqualTo: clipView.widthAnchor, multiplier: 1.0),
+			])
+		case .vertical:
+			layoutConstraintsForOrientation.append(contentsOf: [
+//				webStackView.topAnchor.constraint(equalTo: clipView.topAnchor),
+//				webStackView.bottomAnchor.constraint(equalTo: clipView.bottomAnchor),
+//				webStackView.widthAnchor.constraint(greaterThanOrEqualTo: clipView.widthAnchor, multiplier: 1.0),
+			])
+		default: break
+		}
+		
+		layoutConstraintsForOrientation.append(contentsOf: [
 			webScrollView.topAnchor.constraint(equalTo: clipView.topAnchor),
 			webScrollView.bottomAnchor.constraint(equalTo: clipView.bottomAnchor),
 			webScrollView.leadingAnchor.constraint(equalTo: clipView.leadingAnchor),
 			webScrollView.trailingAnchor.constraint(equalTo: clipView.trailingAnchor)
 		])
+		
+		NSLayoutConstraint.activate(layoutConstraintsForOrientation)
+	}
+
+	override func viewDidLoad() {
+		super.viewDidLoad()
+		
+		webStackView.translatesAutoresizingMaskIntoConstraints = false
+		self.updateForOrientation()
 		
 		urlsTextView.delegate = self
 	}
@@ -98,10 +127,18 @@ extension ViewController {
 		let webScrollView = self.webScrollView
 		webView.translatesAutoresizingMaskIntoConstraints = false
 		webStackView.addView(webView, in: .trailing)
-		NSLayoutConstraint.activate([
-			webView.widthAnchor.constraint(greaterThanOrEqualToConstant: 320.0),
-			webView.bottomAnchor.constraint(equalTo: webScrollView.contentView.bottomAnchor, constant: -20.0)
-			])
+		if self.orientation == .horizontal {
+			NSLayoutConstraint.activate([
+						webView.widthAnchor.constraint(greaterThanOrEqualToConstant: 320.0),
+						webView.bottomAnchor.constraint(equalTo: webScrollView.contentView.bottomAnchor, constant: -20.0)
+						])
+		} else {
+			NSLayoutConstraint.activate([
+						webView.widthAnchor.constraint(equalToConstant: 320.0),
+						webView.heightAnchor.constraint(greaterThanOrEqualToConstant: 480.0),
+			//			webView.bottomAnchor.constraint(equalTo: webScrollView.contentView.bottomAnchor, constant: -20.0)
+						])
+		}
 		
 		return webView
 	}
@@ -166,6 +203,15 @@ extension ViewController {
 		self.updateWebViews()
 	}
 
+	@IBAction func performClosePage(_ sender: Any?) {
+		if self.pagesState.pages.count > 0 {
+			self.pagesState.pages.removeLast()
+			self.updateWebViews()
+		} else {
+			NSApp.perform(#selector(NSWindow.performClose(_:)))
+		}
+		
+	}
 }
 
 extension ViewController : WKNavigationDelegate {
