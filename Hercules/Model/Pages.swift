@@ -76,6 +76,10 @@ extension Model {
 			}
 		}
 		
+		func contains(index: String.Index) -> Bool {
+			return (input.startIndex ..< input.endIndex).contains(index)
+		}
+		
 		enum Highlight {
 			case vanilla
 			

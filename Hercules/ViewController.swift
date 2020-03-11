@@ -221,7 +221,21 @@ extension ViewController {
 
 	@IBAction func performClosePage(_ sender: Any?) {
 		if self.pagesState.pages.count > 0 {
-			self.pagesState.pages.removeLast()
+			var indexToRemove: Int?
+			
+			let selectionStart = urlsTextView.selectedRange().location
+			if selectionStart != NSNotFound {
+				let editorIndex = String.Index(utf16Offset: selectionStart, in: urlsTextView.string)
+				indexToRemove = self.pagesState.parsedPages.firstIndex { (parsedPage) -> Bool in
+					parsedPage.contains(index: editorIndex)
+				}
+			}
+			
+			if let indexToRemove = indexToRemove {
+				self.pagesState.pages.remove(at: indexToRemove)
+			} else {
+				self.pagesState.pages.removeLast()
+			}
 			self.updateWebViews()
 		} else {
 			NSApp.perform(#selector(NSWindow.performClose(_:)))
@@ -288,10 +302,15 @@ extension ViewController : WKUIDelegate {
 
 extension ViewController : NSTextViewDelegate {
 	func updatePagesFromText(commitSearches: Bool) {
-		self.pagesState.text = self.urlsTextView.string
+		var pagesState = self.pagesState
+		
+		pagesState.text = self.urlsTextView.string
 		if commitSearches {
-			self.pagesState.commitSearches()
+			pagesState.commitSearches()
 		}
+		
+		self.pagesState = pagesState
+		
 		self.updateWebViews()
 		self.needsUpdate = false
 	}
@@ -320,9 +339,9 @@ extension ViewController : NSTextViewDelegate {
 	}
 	
 	func textViewDidChangeSelection(_ notification: Notification) {
-		guard let selection = urlsTextView.selectedRanges.first else { return }
-		let start = selection.rangeValue.location
-		guard let string = urlsTextView.textStorage?.string else { return }
+//		guard let selection = urlsTextView.selectedRanges.first else { return }
+//		let start = selection.rangeValue.location
+//		guard let string = urlsTextView.textStorage?.string else { return }
 //		string.range
 //		string.prefix(upTo: start)
 		
