@@ -83,7 +83,10 @@ extension Model {
 			
 			private static let paragraphStyle: NSParagraphStyle = {
 				let style = NSMutableParagraphStyle()
-				style.lineSpacing = 4
+//				style.paragraphSpacing = 6
+//				style.paragraphSpacingBefore = 6
+//				style.lineSpacing = 6
+				style.lineHeightMultiple = 1.5
 				return style
 			}()
 			
