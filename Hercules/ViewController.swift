@@ -20,7 +20,19 @@ extension NSTextStorage {
 	}
 	
 	fileprivate func update(from pages: Model.Pages) {
-		self.formatAsURLField(string: pages.text)
+		self.beginEditing()
+		pages.commit(to: self)
+		self.endEditing()
+		
+//		let text = pages.text
+//		
+//		if text == self.string {
+//			return
+//		}
+//		
+//		self.beginEditing()
+//		self.formatAsURLField(string: text)
+//		self.endEditing()
 	}
 }
 
@@ -44,7 +56,7 @@ class ViewController: NSViewController {
 		}
 	}
 	
-	var needsToUpdateURLsFromText = false
+	var needsUpdate = false
 	
 	var layoutConstraintsForOrientation: [NSLayoutConstraint] = []
 	
@@ -92,6 +104,10 @@ class ViewController: NSViewController {
 		self.updateForOrientation()
 		
 		urlsTextView.delegate = self
+		urlsTextView.typingAttributes = [
+			.font: NSFont.systemFont(ofSize: 14.0),
+			.foregroundColor: NSColor.textColor,
+		]
 	}
 	
 	override func viewDidAppear() {
@@ -162,7 +178,7 @@ extension ViewController {
 			
 			switch page {
 			case let .web(url):
-				if webView.url != url {
+				if webView.url != url && url.scheme == "https" || url.scheme == "http" {
 					webView.load(URLRequest(url: url))
 				}
 			case let .uncommittedSearch(query):
@@ -277,12 +293,12 @@ extension ViewController : NSTextViewDelegate {
 			self.pagesState.commitSearches()
 		}
 		self.updateWebViews()
-		self.needsToUpdateURLsFromText = false
+		self.needsUpdate = false
 	}
 	
 	func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
 		if commandSelector == #selector(NSTextView.insertNewline(_:)) {
-			self.needsToUpdateURLsFromText = true
+			self.needsUpdate = true
 		}
 		
 		return false
@@ -291,7 +307,7 @@ extension ViewController : NSTextViewDelegate {
 	func textView(_ textView: NSTextView, shouldChangeTextIn affectedCharRange: NSRange, replacementString: String?) -> Bool {
 		let before = (textView.string as NSString).substring(with: affectedCharRange)
 		if before.contains("\n") {
-			self.needsToUpdateURLsFromText = true
+			self.needsUpdate = true
 		}
 		
 		return true
@@ -300,6 +316,15 @@ extension ViewController : NSTextViewDelegate {
 	func textDidChange(_ notification: Notification) {
 //		self.urlsTextView.textStorage!.formatAsURLField()
 		
-		self.updatePagesFromText(commitSearches: self.needsToUpdateURLsFromText)
+		self.updatePagesFromText(commitSearches: self.needsUpdate)
+	}
+	
+	func textViewDidChangeSelection(_ notification: Notification) {
+		guard let selection = urlsTextView.selectedRanges.first else { return }
+		let start = selection.rangeValue.location
+		guard let string = urlsTextView.textStorage?.string else { return }
+//		string.range
+//		string.prefix(upTo: start)
+		
 	}
 }
