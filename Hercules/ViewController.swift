@@ -40,6 +40,8 @@ class ViewController: NSViewController {
 	@IBOutlet var webStackView: NSStackView!
 	@IBOutlet var urlsTextView: NSTextView!
 	
+	let minSize = CGSize(width: 375, height: 667)
+	
 	var orientation: NSUserInterfaceLayoutOrientation = .vertical
 	
 	var document: Document {
@@ -76,12 +78,12 @@ class ViewController: NSViewController {
 			layoutConstraintsForOrientation.append(contentsOf: [
 				webStackView.topAnchor.constraint(equalTo: clipView.topAnchor),
 				webStackView.bottomAnchor.constraint(equalTo: clipView.bottomAnchor),
-				webStackView.widthAnchor.constraint(greaterThanOrEqualToConstant: 367),
+				webStackView.widthAnchor.constraint(greaterThanOrEqualToConstant: minSize.width),
 				webStackView.widthAnchor.constraint(greaterThanOrEqualTo: clipView.widthAnchor, multiplier: 1.0),
 			])
 		case .vertical:
 			layoutConstraintsForOrientation.append(contentsOf: [
-				webScrollView.widthAnchor.constraint(greaterThanOrEqualToConstant: 367 + 40),
+				webScrollView.widthAnchor.constraint(greaterThanOrEqualToConstant: minSize.width + 40),
 //				webStackView.widthAnchor.constraint(greaterThanOrEqualToConstant: 367),
 //				webStackView.topAnchor.constraint(equalTo: clipView.topAnchor),
 //				webStackView.bottomAnchor.constraint(equalTo: clipView.bottomAnchor),
@@ -140,9 +142,9 @@ extension ViewController {
 	}
 	
 	func addWebView(for: URL?, configuration: WKWebViewConfiguration = makeConfiguration()) -> WKWebView {
-		let minWidth: CGFloat = 367
+		let minWidth: CGFloat = minSize.width
 		
-		let webView = WKWebView(frame: CGRect(x: 0.0, y: 0.0, width: minWidth, height: 100.0), configuration: configuration)
+		let webView = WKWebView(frame: CGRect(origin: .zero, size: minSize), configuration: configuration)
 		webView.customUserAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 13_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.5 Mobile/15E148 Safari/604.1"
 		webView.navigationDelegate = self
 		webView.uiDelegate = self
@@ -159,8 +161,8 @@ extension ViewController {
 						])
 		} else {
 			NSLayoutConstraint.activate([
-						webView.widthAnchor.constraint(equalToConstant: minWidth),
-						webView.heightAnchor.constraint(greaterThanOrEqualToConstant: 480.0),
+				webView.widthAnchor.constraint(equalToConstant: minSize.width),
+				webView.heightAnchor.constraint(greaterThanOrEqualToConstant: minSize.height),
 			//			webView.bottomAnchor.constraint(equalTo: webScrollView.contentView.bottomAnchor, constant: -20.0)
 						])
 		}
@@ -168,15 +170,32 @@ extension ViewController {
 		return webView
 	}
 	
-	@discardableResult func updateWebViews(configuration: WKWebViewConfiguration? = nil) -> (added: [WKWebView], removed: [WKWebView]) {
+	struct UpdateResult : CustomDebugStringConvertible {
+		var added: [WKWebView] = []
+		var removed: [WKWebView] = []
+		var changed: [WKWebView] = []
+		var unchanged: [WKWebView] = []
+		
+		var debugDescription: String {
+			func toDebugString(_ webViews: [WKWebView]) -> String {
+				return webViews.map({ $0.url?.absoluteString ?? "?" }).joined(separator: ", ")
+			}
+			
+			return """
+			UpdateResult(added: [\(toDebugString(added))], removed: [\(toDebugString(removed))], changed: [\(toDebugString(changed))], unchanged: [\(toDebugString(unchanged))])
+			"""
+		}
+	}
+	
+	@discardableResult func updateWebViews(configuration: WKWebViewConfiguration? = nil) -> UpdateResult {
 		let webViews = (self.webStackView.arrangedSubviews as NSArray).copy() as! [WKWebView]
 		var openWebViewsCount = self.webStackView.arrangedSubviews.count
 		
 		let pages = self.pagesState.presentedPages
-		var added: [WKWebView] = []
-		var removed: [WKWebView] = []
+		var result = UpdateResult()
 		
 		for (index, page) in pages.enumerated() {
+			var didAdd = false
 			let webView: WKWebView
 			if index < openWebViewsCount {
 				webView = webViews[index]
@@ -186,13 +205,28 @@ extension ViewController {
 				} else {
 					webView = self.addWebView(for: page.url)
 				}
-				added.append(webView)
+				result.added.append(webView)
+				didAdd = true
 			}
 			
 			switch page {
 			case let .web(url):
-				if webView.url != url && url.scheme == "https" || url.scheme == "http" {
+				var didChange = false
+				if
+					let scheme = url.scheme,
+					["https","http"].contains(scheme),
+					webView.url != url
+				{
 					webView.load(URLRequest(url: url))
+					didChange = true
+				}
+				
+				if !didAdd {
+					if didChange {
+						result.changed.append(webView)
+					} else {
+						result.unchanged.append(webView)
+					}
 				}
 			case let .uncommittedSearch(query):
 				let html = HTMLTemplate.query(query: query).makeHTML()
@@ -212,12 +246,14 @@ extension ViewController {
 		if pages.count < openWebViewsCount {
 			for indexToRemove in pages.count ..< openWebViewsCount {
 				print("removing", indexToRemove)
-				removed.append(webViews[indexToRemove])
+				result.removed.append(webViews[indexToRemove])
 				self.webStackView.removeArrangedSubview(webViews[indexToRemove])
 			}
 		}
 		
-		return (added, removed)
+		print("UPDATED WEB VIEWS \(result)")
+		
+		return result
 	}
 }
 
@@ -300,6 +336,12 @@ extension ViewController : WKNavigationDelegate {
 			}
 		}
 	}
+	
+//	func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+//		if navigationAction.navigationType == WKNavigationType.linkActivated {
+//			decisionHandler(.allow)
+//		}
+//	}
 }
 
 extension ViewController : WKUIDelegate {
@@ -309,8 +351,8 @@ extension ViewController : WKUIDelegate {
 			let request = navigationAction.request
 			if let url = request.url {
 				self.pagesState.pages.append(Model.Page.web(url: url))
-				let (added, _) = self.updateWebViews(configuration: configuration)
-				return added.first
+				let result = self.updateWebViews(configuration: configuration)
+				return result.added.first
 			}
 		}
 		

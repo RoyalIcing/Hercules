@@ -145,8 +145,7 @@ extension Model {
 			guard let lastValidIndex = pages.lastIndex(where: { $0 != .blank }) else {
 				return self.pages
 			}
-			let slice = self.pages[...lastValidIndex]
-			return Array(slice)
+			return Array(self.pages[...lastValidIndex])
 		}
 		
 		mutating func commitSearches() {
